@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { join, leave } from './action';
 
 interface ChannelState {
   enabled: boolean;
@@ -8,15 +9,23 @@ interface ChannelState {
 
 const initialState: ChannelState = { enabled: false };
 
-export const { actions, reducer } = createSlice({
+const setTrue = (state: ChannelState) => {
+  state.enabled = true;
+};
+
+const setFalse = (state: ChannelState) => {
+  state.enabled = false;
+};
+
+export const { reducer } = createSlice({
   name: 'channel',
   initialState,
-  reducers: {
-    join(state) {
-      state.enabled = true;
-    },
-    leave(state) {
-      state.enabled = false;
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(join.pending, setTrue)
+      .addCase(join.rejected, setFalse)
+      .addCase(leave.fulfilled, setTrue)
+      .addCase(leave.rejected, setFalse);
   },
 });

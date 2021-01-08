@@ -1,9 +1,24 @@
 import React, { FC } from 'react';
 import Head from 'next/head';
+import { useSelector } from 'react-redux';
 import { Button, Container, Heading, HStack, VStack } from '@chakra-ui/react';
 import VideoBox from '@/components/VideoBox';
+import { useAppDispatch } from '@/redux/store';
+import { join, leave } from '@/redux/channel/action';
+import { selectJoined } from '@/redux/channel/selector';
 
 const Home: FC = () => {
+  const dispatch = useAppDispatch();
+  const joined = useSelector(selectJoined);
+
+  const handleJoin = () => {
+    dispatch(join());
+  };
+
+  const handleLeave = () => {
+    dispatch(leave());
+  };
+
   return (
     <div>
       <Head>
@@ -18,8 +33,12 @@ const Home: FC = () => {
             <VideoBox id="remote-player" />
           </HStack>
           <HStack>
-            <Button>Join</Button>
-            <Button>Leave</Button>
+            <Button isDisabled={joined} onClick={handleJoin}>
+              Join
+            </Button>
+            <Button isDisabled={!joined} onClick={handleLeave}>
+              Leave
+            </Button>
           </HStack>
         </VStack>
       </Container>

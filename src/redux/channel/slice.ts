@@ -25,7 +25,7 @@ export const { reducer } = createSlice({
     builder
       .addCase(join.pending, setTrue)
       .addCase(join.rejected, setFalse)
-      .addCase(leave.fulfilled, setTrue)
-      .addCase(leave.rejected, setFalse);
+      .addCase(leave.fulfilled, setFalse)
+      .addCase(leave.rejected, setTrue);
   },
 });

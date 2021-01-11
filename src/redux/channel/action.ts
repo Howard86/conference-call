@@ -9,9 +9,7 @@ import type {
 import type { RootState } from '@/redux/store';
 import type { User } from '@/server/user-service';
 import config from '@/config';
-
 import { GetUserByUIDResponse, getLocal, deleteLocal, postLocal } from '../api';
-import { addOnlineUser, removeOnlineUser } from './slice';
 
 let AgoraRTC: IAgoraRTC;
 let agoraClient: IAgoraRTCClient;
@@ -25,6 +23,9 @@ export const activate = createAsyncThunk(
   async (_, { dispatch }) => {
     AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
     agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+
+    // ! Fixed initialization issues with React dynamic import
+    const { addOnlineUser, removeOnlineUser } = await import('./slice');
 
     // ! EventHandlers will run twice, currently fixed by reducers
     agoraClient.on('user-published', async (agoraUser, mediaType) => {

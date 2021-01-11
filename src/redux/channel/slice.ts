@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '@/server/user-service';
+import { addUser, removeUser, setLoading, setTrue, setFalse } from './utils';
 import { join, leave, activate } from './action';
 
-interface ChannelState {
+export interface ChannelState {
   activated: boolean;
   enabled: boolean;
   isLoading: boolean;
@@ -15,31 +16,6 @@ const initialState: ChannelState = {
   enabled: false,
   isLoading: false,
   users: [],
-};
-
-const setTrue = (state: ChannelState) => {
-  state.enabled = true;
-  state.isLoading = false;
-};
-
-const setFalse = (state: ChannelState) => {
-  state.enabled = false;
-  state.isLoading = false;
-};
-
-const setLoading = (state: ChannelState) => {
-  state.isLoading = true;
-};
-
-const addUser = (state: ChannelState, action: PayloadAction<User>) => {
-  const existed = state.users.some((user) => user.uid === action.payload.uid);
-  if (!existed) {
-    state.users = [...state.users, action.payload];
-  }
-};
-
-const removeUser = (state: ChannelState, action: PayloadAction<string>) => {
-  state.users = state.users.filter((user) => user.uid !== action.payload);
 };
 
 const { actions, reducer } = createSlice({

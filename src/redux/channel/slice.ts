@@ -24,7 +24,7 @@ const setLoading = (state: ChannelState) => {
   state.isLoading = true;
 };
 
-export const { reducer } = createSlice({
+const { reducer } = createSlice({
   name: 'channel',
   initialState,
   reducers: {},
@@ -38,3 +38,5 @@ export const { reducer } = createSlice({
       .addCase(leave.rejected, setTrue);
   },
 });
+
+export default reducer;

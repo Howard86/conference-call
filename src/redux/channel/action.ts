@@ -21,7 +21,6 @@ interface RTC {
 const CHANNEL_NAME = 'conference';
 
 let remoteUsers = {};
-// Agora client options
 
 const rtc: RTC = {
   client: null,
@@ -31,56 +30,45 @@ const rtc: RTC = {
 
 const options = {
   appid: config.agora.appId,
+  token: config.agora.testToken,
   channel: CHANNEL_NAME,
   uid: null,
-  token: config.agora.testToken,
 };
 
 export const join = createAsyncThunk('channel/join', async () => {
-  try {
-    const AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
-    rtc.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-    // add event listener to play remote tracks when remote user publishes.
-    rtc.client.on('user-published', handleUserPublished);
-    rtc.client.on('user-unpublished', handleUserUnpublished);
+  const AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
+  rtc.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+  // add event listener to play remote tracks when remote user publishes.
+  rtc.client.on('user-published', handleUserPublished);
+  rtc.client.on('user-unpublished', handleUserUnpublished);
 
-    // join a channel and create local tracks, we can use Promise.all to run them concurrently
-    [options.uid, rtc.localAudioTrack, rtc.localVideoTrack] = await Promise.all(
-      [
-        // join the channel
-        rtc.client.join(options.appid, options.channel, options.token),
-        // create local tracks, using microphone and camera
-        AgoraRTC.createMicrophoneAudioTrack(),
-        AgoraRTC.createCameraVideoTrack(),
-      ],
-    );
+  // join a channel and create local tracks, we can use Promise.all to run them concurrently
+  [options.uid, rtc.localAudioTrack, rtc.localVideoTrack] = await Promise.all([
+    // join the channel
+    rtc.client.join(options.appid, options.channel, options.token),
+    // create local tracks, using microphone and camera
+    AgoraRTC.createMicrophoneAudioTrack(),
+    AgoraRTC.createCameraVideoTrack(),
+  ]);
 
-    // play local video track
-    rtc.localVideoTrack.play('local-player');
+  // play local video track
+  rtc.localVideoTrack.play('local-player');
 
-    // publish local tracks to channel
-    await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
-  } catch (error) {
-    console.error(error);
-  }
+  // publish local tracks to channel
+  await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
 });
 
 export const leave = createAsyncThunk('channel/leave', async () => {
-  // client.on;
-  try {
-    stop(rtc.localAudioTrack);
-    stop(rtc.localVideoTrack);
+  stop(rtc.localAudioTrack);
+  stop(rtc.localVideoTrack);
 
-    // remove remote users and player views
-    remoteUsers = {};
-    rtc.localAudioTrack = null;
-    rtc.localVideoTrack = null;
+  // remove remote users and player views
+  remoteUsers = {};
+  rtc.localAudioTrack = null;
+  rtc.localVideoTrack = null;
 
-    // leave the channel
-    await rtc.client.leave();
-  } catch (error) {
-    console.error(error);
-  }
+  // leave the channel
+  await rtc.client.leave();
 });
 
 const stop = (localTrack: ILocalVideoTrack | ILocalAudioTrack) => {

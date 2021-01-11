@@ -1,11 +1,9 @@
 import { Action, ThunkAction, configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
-import { reducer as channel } from './channel/slice';
+import reducer from './reducer';
 
 const store = configureStore({
-  reducer: {
-    channel,
-  },
+  reducer,
   devTools: process.env.NODE_ENV === 'development',
 });
 

@@ -1,3 +1,30 @@
+# [0.3.0](https://github.com/Howard86/conference-call/compare/v0.2.0...v0.3.0) (2021-01-11)
+
+
+### Bug Fixes
+
+* channel store initialization and reference ([9826051](https://github.com/Howard86/conference-call/commit/98260514e8c5bd74affd0a371e8c5e75d633c133))
+* mock next/router ([6e56e09](https://github.com/Howard86/conference-call/commit/6e56e09bd48d0e5a7017fa6a21c561fe90e10bb6))
+* mute method and add debouncing on button click ([3c2955e](https://github.com/Howard86/conference-call/commit/3c2955e3e7690ece8176bf1bbec615ddc595cbde))
+
+
+### Features
+
+* add /api/login to prevent unauthorized access ([a5e211e](https://github.com/Howard86/conference-call/commit/a5e211e08cb27741c13dfd0ef29178bb4a556f78))
+* add /api/users to store online user info ([48a53bb](https://github.com/Howard86/conference-call/commit/48a53bb51c89f2a50ff1ab2224dc0efd1ad83a90))
+* add Button loading state ([e621260](https://github.com/Howard86/conference-call/commit/e62126067ae5e43c635ebee6fd677da072b44dfd))
+* add ButtonRouterLink ([8e08ff1](https://github.com/Howard86/conference-call/commit/8e08ff1114f11ccdefbfdcdac8084199e4ae426e))
+* add CallPage ([06bc4b0](https://github.com/Howard86/conference-call/commit/06bc4b0d4a2e9dc03208b438cdae1b7757e4c59e))
+* add custom useToast ([fd009b2](https://github.com/Howard86/conference-call/commit/fd009b2821e02dc12edeeda2faf3ffdc1f385464))
+* add Layout with head tag ([197ef27](https://github.com/Howard86/conference-call/commit/197ef27177ac08ea527b258a3da97eb78e5daa97))
+* add LogInModal ([9769aac](https://github.com/Howard86/conference-call/commit/9769aac9d4c8656d612aba02482661e02d516886))
+* add mute & disable webcam button ([714e627](https://github.com/Howard86/conference-call/commit/714e6277dfabc7286318f4eba4f678cd088aa109))
+* add user store for login and logout ([e58d1ed](https://github.com/Howard86/conference-call/commit/e58d1eda36031e6432e79da89d4819e45fc29f6b))
+* update channel actions and all reducers ([6c7d5ef](https://github.com/Howard86/conference-call/commit/6c7d5ef012ff58c457333110cd30efa99e3b4399))
+* update LoginModal and HomePage ([7d14a72](https://github.com/Howard86/conference-call/commit/7d14a720757e491b8b539731f7e8af55410243f4))
+
+
+
 # [0.2.0](https://github.com/Howard86/conference-call/compare/v0.1.0...v0.2.0) (2021-01-11)
 
 

@@ -1,49 +1,25 @@
 import React, { FC } from 'react';
-import Head from 'next/head';
 import { useSelector } from 'react-redux';
-import { Button, Container, Heading, HStack, VStack } from '@chakra-ui/react';
-import VideoBox from '@/components/VideoBox';
-import { useAppDispatch } from '@/redux/store';
-import { join, leave } from '@/redux/channel/action';
-import { selectJoined } from '@/redux/channel/selector';
+import { Heading, HStack, Text } from '@chakra-ui/react';
 
-const Home: FC = () => {
-  const dispatch = useAppDispatch();
-  const joined = useSelector(selectJoined);
+import LoginModal from '@/components/LoginModal';
+import Layout from '@/components/Layout';
+import ButtonRouterLink from '@/components/ButtonRouterLink';
+import { selectUser } from '@/redux/user';
 
-  const handleJoin = () => {
-    dispatch(join());
-  };
-
-  const handleLeave = () => {
-    dispatch(leave());
-  };
+const HomePage: FC = () => {
+  const { isLoggedIn, username } = useSelector(selectUser);
 
   return (
-    <div>
-      <Head>
-        <title>HomePage</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Container as="main" centerContent>
-        <VStack spacing={10}>
-          <Heading>Video Call</Heading>
-          <HStack spacing={4}>
-            <VideoBox id="local-player" />
-            <VideoBox id="remote-player" />
-          </HStack>
-          <HStack>
-            <Button isDisabled={joined} onClick={handleJoin}>
-              Join
-            </Button>
-            <Button isDisabled={!joined} onClick={handleLeave}>
-              Leave
-            </Button>
-          </HStack>
-        </VStack>
-      </Container>
-    </div>
+    <Layout title="Start a call">
+      <Heading>{isLoggedIn ? `Hello ${username}` : 'Ready to join?'}</Heading>
+      <Text>Fill in the invite code then start a conversation!</Text>
+      <HStack justify="center">
+        <LoginModal />
+        {isLoggedIn && <ButtonRouterLink href="/call" text="Start" />}
+      </HStack>
+    </Layout>
   );
 };
 
-export default Home;
+export default HomePage;

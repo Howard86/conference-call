@@ -1,6 +1,6 @@
 {
   "name": "conference-call",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Arranging audio & video calls powered by Agora.io",
   "repository": {
     "type": "git",
@@ -35,15 +35,18 @@
     "@emotion/styled": "^11.0.0",
     "@reduxjs/toolkit": "^1.5.0",
     "agora-rtc-sdk-ng": "^4.2.1",
+    "bcrypt": "^5.0.0",
     "framer-motion": "^3.1.4",
     "next": "^10.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-icons": "^4.1.0",
     "react-redux": "^7.2.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.8",
     "@testing-library/react": "^11.2.3",
+    "@types/bcrypt": "^3.0.0",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.7",
     "@types/react": "^16.9.56",

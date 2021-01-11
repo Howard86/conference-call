@@ -5,11 +5,17 @@ import { Button, Container, Heading, HStack, VStack } from '@chakra-ui/react';
 import VideoBox from '@/components/VideoBox';
 import { useAppDispatch } from '@/redux/store';
 import { join, leave } from '@/redux/channel/action';
-import { selectJoined } from '@/redux/channel/selector';
+import {
+  selectJoinLoading,
+  selectLeaveLoading,
+  selectJoined,
+} from '@/redux/channel/selector';
 
 const Home: FC = () => {
   const dispatch = useAppDispatch();
   const joined = useSelector(selectJoined);
+  const loadingJoin = useSelector(selectJoinLoading);
+  const loadingLeave = useSelector(selectLeaveLoading);
 
   const handleJoin = () => {
     dispatch(join());
@@ -33,10 +39,18 @@ const Home: FC = () => {
             <VideoBox id="remote-player" />
           </HStack>
           <HStack>
-            <Button isDisabled={joined} onClick={handleJoin}>
+            <Button
+              isDisabled={joined}
+              isLoading={loadingJoin}
+              onClick={handleJoin}
+            >
               Join
             </Button>
-            <Button isDisabled={!joined} onClick={handleLeave}>
+            <Button
+              isDisabled={!joined}
+              isLoading={loadingLeave}
+              onClick={handleLeave}
+            >
               Leave
             </Button>
           </HStack>

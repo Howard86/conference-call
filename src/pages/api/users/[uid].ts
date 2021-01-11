@@ -15,7 +15,7 @@ export default (req: NextApiRequest, res: NextApiResponse): void => {
 
     case 'DELETE': {
       const success = deleteUser(uid);
-      return res.status(success ? 204 : 404).json({ success });
+      return res.status(success ? 200 : 404).json({ success });
     }
 
     default:

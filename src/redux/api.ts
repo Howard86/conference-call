@@ -1,5 +1,10 @@
-interface GenericResponse {
+import type { User } from '@/server/user-service';
+export interface GenericResponse {
   success: boolean;
+}
+
+export interface GetUserByUIDResponse extends GenericResponse {
+  user: User;
 }
 
 export const getLocal = async <R = GenericResponse>(
@@ -19,6 +24,16 @@ export const postLocal = async <R = GenericResponse, B = unknown>(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+  });
+
+  return response.json();
+};
+
+export const deleteLocal = async <R = GenericResponse>(
+  endpoint: string,
+): Promise<R> => {
+  const response = await fetch(`/api/${endpoint}`, {
+    method: 'DELETE',
   });
 
   return response.json();

@@ -1,99 +1,114 @@
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import type {
+  IAgoraRTC,
   IAgoraRTCClient,
-  IAgoraRTCRemoteUser,
   ILocalAudioTrack,
   ILocalVideoTrack,
+  UID,
 } from 'agora-rtc-sdk-ng';
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { RootState } from '@/redux/store';
+import type { User } from '@/server/user-service';
 import config from '@/config';
 
-type AgoraListener = (
-  user: IAgoraRTCRemoteUser,
-  mediaType: 'audio' | 'video',
-) => void;
+import { GetUserByUIDResponse, getLocal, deleteLocal, postLocal } from '../api';
+import { addOnlineUser, removeOnlineUser } from './slice';
 
-interface RTC {
-  client: IAgoraRTCClient;
-  localAudioTrack: ILocalAudioTrack;
-  localVideoTrack: ILocalVideoTrack;
-}
+let AgoraRTC: IAgoraRTC;
+let agoraClient: IAgoraRTCClient;
+let localAudioTrack: ILocalAudioTrack;
+let localVideoTrack: ILocalVideoTrack;
 
 const CHANNEL_NAME = 'conference';
 
-let remoteUsers = {};
+export const activate = createAsyncThunk(
+  'channel/activate',
+  async (_, { dispatch }) => {
+    AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
+    agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-const rtc: RTC = {
-  client: null,
-  localAudioTrack: null,
-  localVideoTrack: null,
-};
+    // ! EventHandlers will run twice, currently fixed by reducers
+    agoraClient.on('user-published', async (agoraUser, mediaType) => {
+      await agoraClient.subscribe(agoraUser, mediaType);
 
-const options = {
-  appid: config.agora.appId,
-  token: config.agora.testToken,
-  channel: CHANNEL_NAME,
-  uid: null,
-};
+      switch (mediaType) {
+        case 'video':
+          agoraUser.videoTrack.play('remote-player');
+          break;
 
-export const join = createAsyncThunk('channel/join', async () => {
-  const AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
-  rtc.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-  // add event listener to play remote tracks when remote user publishes.
-  rtc.client.on('user-published', handleUserPublished);
-  rtc.client.on('user-unpublished', handleUserUnpublished);
+        case 'audio':
+          agoraUser.audioTrack.play();
+          break;
 
-  // join a channel and create local tracks, we can use Promise.all to run them concurrently
-  [options.uid, rtc.localAudioTrack, rtc.localVideoTrack] = await Promise.all([
-    // join the channel
-    rtc.client.join(options.appid, options.channel, options.token),
-    // create local tracks, using microphone and camera
-    AgoraRTC.createMicrophoneAudioTrack(),
-    AgoraRTC.createCameraVideoTrack(),
-  ]);
+        default:
+          console.error(`Unknown mediaType ${mediaType}`);
+          break;
+      }
 
-  // play local video track
-  rtc.localVideoTrack.play('local-player');
+      const { success, user } = await getLocal<GetUserByUIDResponse>(
+        `users/${agoraUser.uid}`,
+      );
 
-  // publish local tracks to channel
-  await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
-});
+      if (success) {
+        dispatch(addOnlineUser(user));
+      }
+    });
 
-export const leave = createAsyncThunk('channel/leave', async () => {
-  stop(rtc.localAudioTrack);
-  stop(rtc.localVideoTrack);
+    agoraClient.on('user-unpublished', (agoraUser) => {
+      agoraUser.audioTrack?.removeAllListeners();
+      agoraUser.videoTrack?.removeAllListeners();
+      dispatch(removeOnlineUser(`${agoraUser.uid}`));
+    });
+  },
+);
 
-  // remove remote users and player views
-  remoteUsers = {};
-  rtc.localAudioTrack = null;
-  rtc.localVideoTrack = null;
+export const join = createAsyncThunk(
+  'channel/join',
+  async (username: string) => {
+    let agoraUID: UID;
 
-  // leave the channel
-  await rtc.client.leave();
-});
+    [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
+      agoraClient.join(
+        config.agora.appId,
+        CHANNEL_NAME,
+        config.agora.testToken,
+      ),
+      AgoraRTC.createMicrophoneAudioTrack(),
+      AgoraRTC.createCameraVideoTrack(),
+    ]);
 
-const stop = (localTrack: ILocalVideoTrack | ILocalAudioTrack) => {
-  localTrack.stop();
-  localTrack.close();
-};
+    localVideoTrack.play('local-player');
 
-const subscribe: AgoraListener = async (user, mediaType) => {
-  // subscribe to a remote user
-  await rtc.client.subscribe(user, mediaType);
-  if (mediaType === 'video') {
-    user.videoTrack.play('remote-player');
-  }
-  if (mediaType === 'audio') {
-    user.audioTrack.play();
-  }
-};
+    await agoraClient.publish([localAudioTrack, localVideoTrack]);
 
-const handleUserPublished: AgoraListener = (user, mediaType) => {
-  const id = user.uid;
-  remoteUsers[id] = user;
-  subscribe(user, mediaType);
-};
+    const uid = `${agoraUID}`;
+    const user: User = {
+      username,
+      uid,
+      // ! this may have timezone issues, should be handled by server
+      createdAt: Date.now().valueOf(),
+    };
 
-const handleUserUnpublished: AgoraListener = (user) => {
-  const id = user.uid;
-  delete remoteUsers[id];
-};
+    postLocal('users', user);
+    return user;
+  },
+);
+
+export const leave = createAsyncThunk(
+  'channel/leave',
+  async (_, { getState }) => {
+    const root = getState() as RootState;
+    const uid = `${root.user.uid}`;
+
+    localAudioTrack.stop();
+    localAudioTrack.close();
+    localAudioTrack = undefined;
+
+    localVideoTrack.stop();
+    localVideoTrack.close();
+    localVideoTrack = undefined;
+
+    deleteLocal(`users/${uid}`);
+    await agoraClient.leave();
+    return uid;
+  },
+);

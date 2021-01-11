@@ -113,3 +113,31 @@ export const leave = createAsyncThunk(
     return uid;
   },
 );
+
+export const updateVolume = (volume: number): boolean => {
+  if (!localAudioTrack) {
+    return false;
+  }
+  localAudioTrack.setVolume(volume);
+  return true;
+};
+
+export const updateVideoPublish = async (
+  isPublished: boolean,
+): Promise<boolean> => {
+  if (!localVideoTrack || !agoraClient) {
+    return false;
+  }
+
+  if (isPublished) {
+    await agoraClient.unpublish(localVideoTrack);
+    localVideoTrack.stop();
+    localVideoTrack.close();
+  } else {
+    localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+    localVideoTrack.play('local-player');
+    await agoraClient.publish(localVideoTrack);
+  }
+
+  return true;
+};

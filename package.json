@@ -1,6 +1,6 @@
 {
   "name": "conference-call",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Arranging audio & video calls powered by Agora.io",
   "repository": {
     "type": "git",

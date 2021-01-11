@@ -1,17 +1,19 @@
 import React, { FC } from 'react';
-import Head from 'next/head';
 import { useSelector } from 'react-redux';
-import { Button, Container, Heading, HStack, VStack } from '@chakra-ui/react';
+import { Button, Heading, HStack, VStack } from '@chakra-ui/react';
 import VideoBox from '@/components/VideoBox';
 import { useAppDispatch } from '@/redux/store';
-import { join, leave } from '@/redux/channel/action';
 import {
+  join,
+  leave,
   selectJoinLoading,
   selectLeaveLoading,
   selectJoined,
-} from '@/redux/channel/selector';
+} from '@/redux/channel';
+import LoginModal from '@/components/LoginModal';
+import Layout from '@/components/Layout';
 
-const Home: FC = () => {
+const HomePage: FC = () => {
   const dispatch = useAppDispatch();
   const joined = useSelector(selectJoined);
   const loadingJoin = useSelector(selectJoinLoading);
@@ -26,38 +28,33 @@ const Home: FC = () => {
   };
 
   return (
-    <div>
-      <Head>
-        <title>HomePage</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Container as="main" centerContent>
-        <VStack spacing={10}>
-          <Heading>Video Call</Heading>
-          <HStack spacing={4}>
-            <VideoBox id="local-player" />
-            <VideoBox id="remote-player" />
-          </HStack>
-          <HStack>
-            <Button
-              isDisabled={joined}
-              isLoading={loadingJoin}
-              onClick={handleJoin}
-            >
-              Join
-            </Button>
-            <Button
-              isDisabled={!joined}
-              isLoading={loadingLeave}
-              onClick={handleLeave}
-            >
-              Leave
-            </Button>
-          </HStack>
-        </VStack>
-      </Container>
-    </div>
+    <Layout title="Start a call">
+      <VStack spacing={10}>
+        <Heading>Video Call</Heading>
+        <HStack spacing={4}>
+          <VideoBox id="local-player" />
+          <VideoBox id="remote-player" />
+        </HStack>
+        <HStack>
+          <Button
+            isDisabled={joined}
+            isLoading={loadingJoin}
+            onClick={handleJoin}
+          >
+            Join
+          </Button>
+          <Button
+            isDisabled={!joined}
+            isLoading={loadingLeave}
+            onClick={handleLeave}
+          >
+            Leave
+          </Button>
+        </HStack>
+        <LoginModal />
+      </VStack>
+    </Layout>
   );
 };
 
-export default Home;
+export default HomePage;

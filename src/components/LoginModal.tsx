@@ -1,5 +1,5 @@
 import React, { ChangeEvent, FC, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useRouter } from 'next/router';
 import {
   Button,
   Modal,
@@ -18,11 +18,13 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { FaUserCircle, FaKey } from 'react-icons/fa';
-import { RootState, useAppDispatch } from '@/redux/store';
-import { login, logout } from '@/redux/user';
+import { useAppDispatch } from '@/redux/store';
+import { login, updateUsername } from '@/redux/user';
+import { activate } from '@/redux/channel';
 
 const LoginModal: FC = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast({
     position: 'bottom',
@@ -33,32 +35,23 @@ const LoginModal: FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
-
-  const handleOnClick = () => {
-    if (isLoggedIn) {
-      dispatch(logout());
+  const handleOnEnter = async () => {
+    const action = await dispatch(login(password));
+    if (action.payload) {
+      toast({
+        title: 'Successfully Enter!',
+        status: 'success',
+      });
+      onClose();
+      dispatch(updateUsername(username));
+      await dispatch(activate());
+      router.push('/call');
     } else {
-      onOpen();
+      toast({
+        title: 'Invalid Code',
+        status: 'warning',
+      });
     }
-  };
-
-  const handleOnEnter = () => {
-    dispatch(login(password)).then((action) => {
-      const success = action.payload;
-      if (success) {
-        onClose();
-        toast({
-          title: 'Success!',
-          status: 'success',
-        });
-      } else {
-        toast({
-          title: 'Invalid Code',
-          status: 'warning',
-        });
-      }
-    });
   };
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) =>
@@ -68,9 +61,7 @@ const LoginModal: FC = () => {
     setPassword(event.target.value);
   return (
     <>
-      <Button onClick={handleOnClick}>
-        {isLoggedIn ? 'Log Out' : 'Log In'}
-      </Button>
+      <Button onClick={onOpen}>Log In</Button>
 
       <Modal
         size="xs"

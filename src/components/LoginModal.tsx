@@ -14,10 +14,11 @@ import {
   InputLeftElement,
   Input,
   Icon,
-  useToast,
   useDisclosure,
 } from '@chakra-ui/react';
 import { FaUserCircle, FaKey } from 'react-icons/fa';
+
+import useToast from '@/hooks/use-toast';
 import { useAppDispatch } from '@/redux/store';
 import { login, updateUsername } from '@/redux/user';
 import { activate } from '@/redux/channel';
@@ -26,11 +27,7 @@ const LoginModal: FC = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const toast = useToast({
-    position: 'bottom',
-    duration: 3000,
-    isClosable: true,
-  });
+  const toast = useToast();
 
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');

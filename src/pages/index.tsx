@@ -1,55 +1,49 @@
 import React, { FC } from 'react';
 import Head from 'next/head';
+import { useSelector } from 'react-redux';
+import { Button, Container, Heading, HStack, VStack } from '@chakra-ui/react';
+import VideoBox from '@/components/VideoBox';
+import { useAppDispatch } from '@/redux/store';
+import { join, leave } from '@/redux/channel/action';
+import { selectJoined } from '@/redux/channel/selector';
 
-const Home: FC = () => (
-  <div>
-    <Head>
-      <title>Create Next App</title>
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
+const Home: FC = () => {
+  const dispatch = useAppDispatch();
+  const joined = useSelector(selectJoined);
 
-    <main>
-      <h1>
-        Welcome to <a href="https://nextjs.org">Next.js!</a>
-      </h1>
+  const handleJoin = () => {
+    dispatch(join());
+  };
 
-      <p>
-        Get started by editing <code>pages/index.js</code>
-      </p>
+  const handleLeave = () => {
+    dispatch(leave());
+  };
 
-      <div>
-        <a href="https://nextjs.org/docs">
-          <h3>Documentation &rarr;</h3>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a href="https://nextjs.org/learn">
-          <h3>Learn &rarr;</h3>
-          <p>Learn about Next.js in an interactive course with quizzes!</p>
-        </a>
-
-        <a href="https://github.com/vercel/next.js/tree/master/examples">
-          <h3>Examples &rarr;</h3>
-          <p>Discover and deploy boilerplate example Next.js projects.</p>
-        </a>
-
-        <a href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app">
-          <h3>Deploy &rarr;</h3>
-          <p>Instantly deploy your Next.js site to a public URL with Vercel.</p>
-        </a>
-      </div>
-    </main>
-
-    <footer>
-      <a
-        href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Powered by <img src="/vercel.svg" alt="Vercel Logo" />
-      </a>
-    </footer>
-  </div>
-);
+  return (
+    <div>
+      <Head>
+        <title>HomePage</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Container as="main" centerContent>
+        <VStack spacing={10}>
+          <Heading>Video Call</Heading>
+          <HStack spacing={4}>
+            <VideoBox id="local-player" />
+            <VideoBox id="remote-player" />
+          </HStack>
+          <HStack>
+            <Button isDisabled={joined} onClick={handleJoin}>
+              Join
+            </Button>
+            <Button isDisabled={!joined} onClick={handleLeave}>
+              Leave
+            </Button>
+          </HStack>
+        </VStack>
+      </Container>
+    </div>
+  );
+};
 
 export default Home;

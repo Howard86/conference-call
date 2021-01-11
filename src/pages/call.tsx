@@ -37,8 +37,10 @@ const CallPage: FC = () => {
   const loadingJoin = useSelector(selectJoinLoading);
   const loadingLeave = useSelector(selectLeaveLoading);
 
-  const [isMute, setMute] = useState(false);
+  const [isListened, setListened] = useState(false);
+  const [isListenedLoading, setListenedLoading] = useState(false);
   const [isPublished, setPublished] = useState(true);
+  const [isPublishedLoading, setPublishedLoading] = useState(false);
 
   const handleJoin = () => {
     dispatch(join(username));
@@ -49,28 +51,35 @@ const CallPage: FC = () => {
   };
 
   const handleOnMute = () => {
-    const success = updateVolume(isMute ? 100 : 0);
-    if (success) {
-      setMute(!isMute);
-    } else {
-      toast({
-        status: 'error',
-        title: 'Failed to adjust volume',
-      });
-    }
+    setListenedLoading(true);
+    updateVolume(isListened)
+      .then((success) => {
+        if (success) {
+          setListened(!isListened);
+        } else {
+          toast({
+            status: 'error',
+            title: 'Failed to adjust volume',
+          });
+        }
+      })
+      .finally(() => setListenedLoading(false));
   };
 
   const handleOnVideoPublish = () => {
-    updateVideoPublish(isPublished).then((success) => {
-      if (success) {
-        setPublished(!isPublished);
-      } else {
-        toast({
-          status: 'error',
-          title: 'Failed to stop screening',
-        });
-      }
-    });
+    setPublishedLoading(true);
+    updateVideoPublish(isPublished)
+      .then((success) => {
+        if (success) {
+          setPublished(!isPublished);
+        } else {
+          toast({
+            status: 'error',
+            title: 'Failed to stop screening',
+          });
+        }
+      })
+      .finally(() => setPublishedLoading(false));
   };
 
   useEffect(() => {
@@ -100,14 +109,14 @@ const CallPage: FC = () => {
       <VStack>
         <HStack>
           <Button
-            isDisabled={joined}
+            isDisabled={loadingJoin || joined}
             isLoading={loadingJoin}
             onClick={handleJoin}
           >
             Join
           </Button>
           <Button
-            isDisabled={!joined}
+            isDisabled={loadingLeave || !joined}
             isLoading={loadingLeave}
             onClick={handleLeave}
           >
@@ -118,10 +127,11 @@ const CallPage: FC = () => {
           <IconButton
             colorScheme="blue"
             variant="ghost"
-            aria-label={isMute ? 'unmute microphone' : 'mute microphone'}
-            icon={isMute ? <BiMicrophoneOff /> : <BiMicrophone />}
+            aria-label={isListened ? 'unmute microphone' : 'mute microphone'}
+            icon={isListened ? <BiMicrophoneOff /> : <BiMicrophone />}
             fontSize="xl"
-            disabled={!joined}
+            isLoading={isListenedLoading}
+            disabled={isPublishedLoading || !joined}
             onClick={handleOnMute}
           />
           <IconButton
@@ -132,7 +142,8 @@ const CallPage: FC = () => {
               isPublished ? <IoVideocamOutline /> : <IoVideocamOffOutline />
             }
             fontSize="2xl"
-            disabled={!joined}
+            isLoading={isPublishedLoading}
+            disabled={isPublishedLoading || !joined}
             onClick={handleOnVideoPublish}
           />
         </HStack>

@@ -114,11 +114,20 @@ export const leave = createAsyncThunk(
   },
 );
 
-export const updateVolume = (volume: number): boolean => {
-  if (!localAudioTrack) {
+export const updateVolume = async (isPublished: boolean): Promise<boolean> => {
+  if (!localAudioTrack || !agoraClient) {
     return false;
   }
-  localAudioTrack.setVolume(volume);
+
+  // TODO: somehow the browser still detects accessing microphone after unpublish
+  if (isPublished) {
+    localAudioTrack.setVolume(0);
+    await agoraClient.unpublish(localAudioTrack);
+  } else {
+    localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    await agoraClient.publish(localAudioTrack);
+  }
+
   return true;
 };
 

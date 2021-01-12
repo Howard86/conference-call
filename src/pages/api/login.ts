@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { isValidPassword } from '@/server/encryption';
+import { isValidPassword } from '@/server/auth';
 
 interface LoginResponse {
   success: boolean;

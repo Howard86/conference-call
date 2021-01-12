@@ -1,4 +1,4 @@
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 export interface GenericResponse {
   success: boolean;
 }

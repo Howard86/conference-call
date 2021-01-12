@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 import { addUser, removeUser, setLoading, setTrue, setFalse } from './utils';
 import { join, leave, activate } from './action';
 

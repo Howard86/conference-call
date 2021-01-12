@@ -7,7 +7,7 @@ import type {
   UID,
 } from 'agora-rtc-sdk-ng';
 import type { RootState } from '@/redux/store';
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 import config from '@/config';
 import { GetUserByUIDResponse, getLocal, deleteLocal, postLocal } from '../api';
 

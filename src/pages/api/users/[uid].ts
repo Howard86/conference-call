@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getUserByUID, deleteUser } from '@/server/user-service';
+import { getUserByUID, deleteUser } from '@/server/user';
 
 export default (req: NextApiRequest, res: NextApiResponse): void => {
   const uid = req.query.uid as string;

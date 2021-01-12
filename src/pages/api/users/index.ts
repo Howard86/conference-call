@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllUsers, addUser } from '@/server/user-service';
+import { getAllUsers, addUser } from '@/server/user';
 
 export default (req: NextApiRequest, res: NextApiResponse): void => {
   switch (req.method) {

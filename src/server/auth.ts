@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { compare, hashSync } from 'bcrypt';
 import type { NextApiRequest } from 'next';
-import type { User } from './user-service';
+import type { User } from './user';
 import config from '@/config/index';
 
 const hashedPassword = hashSync(config.auth.password, config.auth.hashSalt);

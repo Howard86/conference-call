@@ -12,6 +12,7 @@ const config = {
   agora: {
     appId: getEnvString('NEXT_PUBLIC_AGORA_APP_ID'),
     testToken: getEnvString('NEXT_PUBLIC_AGORA_TEST_TOKEN'),
+    certificate: getEnvString('AGORA_CERTIFICATE'),
   },
   auth: {
     githubId: getEnvString('GITHUB_ID'),
@@ -21,6 +22,7 @@ const config = {
     jwtSecret: getEnvString('JWT_SECRET'),
     jwtExpiration: getEnvNumber('JWT_EXPIRATION'),
   },
+  adminEmail: process.env.ADMIN_EMAIL,
 };
 
 export default config;

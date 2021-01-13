@@ -14,6 +14,8 @@ const config = {
     testToken: getEnvString('NEXT_PUBLIC_AGORA_TEST_TOKEN'),
   },
   auth: {
+    githubId: getEnvString('GITHUB_ID'),
+    githubSecret: getEnvString('GITHUB_SECRET'),
     hashSalt: getEnvString('HASH_SALT', 'salt'),
     password: getEnvString('PASSWORD'),
     jwtSecret: getEnvString('JWT_SECRET'),

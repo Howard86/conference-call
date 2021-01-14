@@ -9,7 +9,13 @@ import type {
 import type { RootState } from '@/redux/store';
 import type { User } from '@/server/user';
 import config from '@/config';
-import { GetUserByUIDResponse, getLocal, deleteLocal, postLocal } from '../api';
+import {
+  GetUserByUIDResponse,
+  IssueTokenResponse,
+  getLocal,
+  deleteLocal,
+  postLocal,
+} from '../api';
 
 let AgoraRTC: IAgoraRTC;
 let agoraClient: IAgoraRTCClient;
@@ -17,6 +23,19 @@ let localAudioTrack: ILocalAudioTrack;
 let localVideoTrack: ILocalVideoTrack;
 
 const CHANNEL_NAME = 'conference';
+
+export const updateAccessToken = createAsyncThunk(
+  'channel/update_token',
+  async () => {
+    const { success, token } = await postLocal<IssueTokenResponse>('issue', {});
+
+    if (!success) {
+      throw new Error('Unauthorized');
+    }
+
+    return token;
+  },
+);
 
 export const activate = createAsyncThunk(
   'channel/activate',
@@ -67,12 +86,14 @@ export const join = createAsyncThunk(
   async (username: string) => {
     let agoraUID: UID;
 
+    const { token, success } = await getLocal<IssueTokenResponse>('issue');
+
+    if (!success) {
+      throw new Error('Token Expired');
+    }
+
     [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
-      agoraClient.join(
-        config.agora.appId,
-        CHANNEL_NAME,
-        config.agora.testToken,
-      ),
+      agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
       AgoraRTC.createMicrophoneAudioTrack(),
       AgoraRTC.createCameraVideoTrack(),
     ]);

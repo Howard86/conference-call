@@ -1,13 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '@/server/user';
 import { addUser, removeUser, setLoading, setTrue, setFalse } from './utils';
-import { join, leave, activate } from './action';
+import { join, leave, activate, updateAccessToken } from './action';
 
 export interface ChannelState {
   activated: boolean;
   enabled: boolean;
   isLoading: boolean;
   users: User[];
+  token: string;
   message?: string;
 }
 
@@ -16,6 +17,7 @@ const initialState: ChannelState = {
   enabled: false,
   isLoading: false,
   users: [],
+  token: '',
 };
 
 const { actions, reducer } = createSlice({
@@ -42,7 +44,13 @@ const { actions, reducer } = createSlice({
         removeUser(state, action);
         state.activated = false;
       })
-      .addCase(leave.rejected, setTrue);
+      .addCase(leave.rejected, setTrue)
+      .addCase(
+        updateAccessToken.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.token = action.payload;
+        },
+      );
   },
 });
 

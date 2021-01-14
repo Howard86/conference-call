@@ -7,6 +7,10 @@ export interface GetUserByUIDResponse extends GenericResponse {
   user: User;
 }
 
+export interface IssueTokenResponse extends GenericResponse {
+  token: string;
+}
+
 export const getLocal = async <R = GenericResponse>(
   endpoint: string,
 ): Promise<R> => {

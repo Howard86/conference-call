@@ -1,4 +1,4 @@
-export { join, leave, activate } from './action';
+export { join, leave, activate, updateAccessToken } from './action';
 export {
   selectJoinLoading,
   selectLeaveLoading,

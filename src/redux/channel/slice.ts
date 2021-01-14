@@ -26,6 +26,9 @@ const { actions, reducer } = createSlice({
   reducers: {
     addOnlineUser: addUser,
     removeOnlineUser: removeUser,
+    updateErrorMessage(state, action: PayloadAction<string>) {
+      state.message = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -54,6 +57,6 @@ const { actions, reducer } = createSlice({
   },
 });
 
-export const { addOnlineUser, removeOnlineUser } = actions;
+export const { addOnlineUser, removeOnlineUser, updateErrorMessage } = actions;
 
 export default reducer;

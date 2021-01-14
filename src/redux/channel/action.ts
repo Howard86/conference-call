@@ -26,11 +26,11 @@ const CHANNEL_NAME = 'conference';
 
 export const updateAccessToken = createAsyncThunk(
   'channel/update_token',
-  async () => {
+  async (_, { rejectWithValue }) => {
     const { success, token } = await postLocal<IssueTokenResponse>('issue', {});
 
     if (!success) {
-      throw new Error('Unauthorized');
+      return rejectWithValue({ message: 'Unauthorized action' });
     }
 
     return token;
@@ -44,11 +44,19 @@ export const activate = createAsyncThunk(
     agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
     // ! Fixed initialization issues with React dynamic import
-    const { addOnlineUser, removeOnlineUser } = await import('./slice');
+    const {
+      addOnlineUser,
+      removeOnlineUser,
+      updateErrorMessage,
+    } = await import('./slice');
 
     // ! EventHandlers will run twice, currently fixed by reducers
     agoraClient.on('user-published', async (agoraUser, mediaType) => {
-      await agoraClient.subscribe(agoraUser, mediaType);
+      try {
+        await agoraClient.subscribe(agoraUser, mediaType);
+      } catch (error) {
+        dispatch(updateErrorMessage(error.message));
+      }
 
       switch (mediaType) {
         case 'video':
@@ -83,24 +91,39 @@ export const activate = createAsyncThunk(
 
 export const join = createAsyncThunk(
   'channel/join',
-  async (username: string) => {
+  async (username: string, { rejectWithValue }) => {
     let agoraUID: UID;
 
+    const name = 'Please contact admin';
     const { token, success } = await getLocal<IssueTokenResponse>('issue');
 
     if (!success) {
-      throw new Error('Token Expired');
+      return rejectWithValue({ name, message: 'token expired' });
     }
 
-    [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
-      agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
-      AgoraRTC.createMicrophoneAudioTrack(),
-      AgoraRTC.createCameraVideoTrack(),
-    ]);
+    try {
+      [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
+        agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
+        AgoraRTC.createMicrophoneAudioTrack(),
+        AgoraRTC.createCameraVideoTrack(),
+      ]);
+    } catch (error) {
+      return rejectWithValue({
+        name,
+        message: error.message,
+      });
+    }
 
     localVideoTrack.play('local-player');
 
-    await agoraClient.publish([localAudioTrack, localVideoTrack]);
+    try {
+      await agoraClient.publish([localAudioTrack, localVideoTrack]);
+    } catch (error) {
+      return rejectWithValue({
+        name,
+        message: error.message,
+      });
+    }
 
     const uid = `${agoraUID}`;
     const user: User = {
@@ -110,7 +133,7 @@ export const join = createAsyncThunk(
       createdAt: Date.now().valueOf(),
     };
 
-    postLocal('users', user);
+    await postLocal('users', user);
     return user;
   },
 );
@@ -129,7 +152,7 @@ export const leave = createAsyncThunk(
     localVideoTrack.close();
     localVideoTrack = undefined;
 
-    deleteLocal(`users/${uid}`);
+    await deleteLocal(`users/${uid}`);
     await agoraClient.leave();
     return uid;
   },

@@ -4,7 +4,10 @@ import type { NextApiRequest } from 'next';
 import type { User } from './user';
 import config from '@/config/index';
 
-const hashedPassword = hashSync(config.auth.password, config.auth.hashSalt);
+const hashedPassword = hashSync(
+  config.auth.password,
+  config.auth.hashSaltRound,
+);
 
 export const isValidPassword = async (password: string): Promise<boolean> => {
   try {

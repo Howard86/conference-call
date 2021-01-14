@@ -17,7 +17,7 @@ const config = {
   auth: {
     githubId: getEnvString('GITHUB_ID'),
     githubSecret: getEnvString('GITHUB_SECRET'),
-    hashSalt: getEnvString('HASH_SALT', 'salt'),
+    hashSaltRound: getEnvNumber('HASH_SALT_ROUND'),
     password: getEnvString('PASSWORD'),
     jwtSecret: getEnvString('JWT_SECRET'),
     jwtExpiration: getEnvNumber('JWT_EXPIRATION'),

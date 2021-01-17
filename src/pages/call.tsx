@@ -9,6 +9,7 @@ import {
   IconButton,
   Text,
 } from '@chakra-ui/react';
+import type { SerializedError } from '@reduxjs/toolkit';
 import VideoBox from '@/components/VideoBox';
 import Layout from '@/components/Layout';
 import { BiMicrophone, BiMicrophoneOff } from 'react-icons/bi';
@@ -42,12 +43,33 @@ const CallPage: FC = () => {
   const [isPublished, setPublished] = useState(true);
   const [isPublishedLoading, setPublishedLoading] = useState(false);
 
-  const handleJoin = () => {
-    dispatch(join(username));
+  const handleJoin = async () => {
+    const action = await dispatch(join(username));
+    const success = join.fulfilled.match(action);
+
+    // TODO: fix type
+    const error = action.payload as SerializedError;
+
+    toast({
+      title: success ? 'Successfully join a room' : error.name,
+      status: success ? 'success' : 'error',
+      description: !success && error.message,
+    });
   };
 
-  const handleLeave = () => {
-    dispatch(leave());
+  const handleLeave = async () => {
+    const action = await dispatch(leave());
+
+    const success = leave.fulfilled.match(action);
+
+    // TODO: fix type
+    const error = action.payload as SerializedError;
+
+    toast({
+      title: success ? 'Successfully leave a room' : error.name,
+      status: success ? 'success' : 'error',
+      description: !success && error.message,
+    });
   };
 
   const handleOnMute = () => {

@@ -1,5 +1,5 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 import type { ChannelState } from './slice';
 
 export const setTrue = (state: ChannelState): void => {

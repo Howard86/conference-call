@@ -7,9 +7,15 @@ import type {
   UID,
 } from 'agora-rtc-sdk-ng';
 import type { RootState } from '@/redux/store';
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 import config from '@/config';
-import { GetUserByUIDResponse, getLocal, deleteLocal, postLocal } from '../api';
+import {
+  GetUserByUIDResponse,
+  IssueTokenResponse,
+  getLocal,
+  deleteLocal,
+  postLocal,
+} from '../api';
 
 let AgoraRTC: IAgoraRTC;
 let agoraClient: IAgoraRTCClient;
@@ -18,6 +24,19 @@ let localVideoTrack: ILocalVideoTrack;
 
 const CHANNEL_NAME = 'conference';
 
+export const updateAccessToken = createAsyncThunk(
+  'channel/update_token',
+  async (_, { rejectWithValue }) => {
+    const { success, token } = await postLocal<IssueTokenResponse>('issue', {});
+
+    if (!success) {
+      return rejectWithValue({ message: 'Unauthorized action' });
+    }
+
+    return token;
+  },
+);
+
 export const activate = createAsyncThunk(
   'channel/activate',
   async (_, { dispatch }) => {
@@ -25,11 +44,19 @@ export const activate = createAsyncThunk(
     agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
     // ! Fixed initialization issues with React dynamic import
-    const { addOnlineUser, removeOnlineUser } = await import('./slice');
+    const {
+      addOnlineUser,
+      removeOnlineUser,
+      updateErrorMessage,
+    } = await import('./slice');
 
     // ! EventHandlers will run twice, currently fixed by reducers
     agoraClient.on('user-published', async (agoraUser, mediaType) => {
-      await agoraClient.subscribe(agoraUser, mediaType);
+      try {
+        await agoraClient.subscribe(agoraUser, mediaType);
+      } catch (error) {
+        dispatch(updateErrorMessage(error.message));
+      }
 
       switch (mediaType) {
         case 'video':
@@ -64,22 +91,39 @@ export const activate = createAsyncThunk(
 
 export const join = createAsyncThunk(
   'channel/join',
-  async (username: string) => {
+  async (username: string, { rejectWithValue }) => {
     let agoraUID: UID;
 
-    [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
-      agoraClient.join(
-        config.agora.appId,
-        CHANNEL_NAME,
-        config.agora.testToken,
-      ),
-      AgoraRTC.createMicrophoneAudioTrack(),
-      AgoraRTC.createCameraVideoTrack(),
-    ]);
+    const name = 'Please contact admin';
+    const { token, success } = await getLocal<IssueTokenResponse>('issue');
+
+    if (!success) {
+      return rejectWithValue({ name, message: 'token expired' });
+    }
+
+    try {
+      [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
+        agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
+        AgoraRTC.createMicrophoneAudioTrack(),
+        AgoraRTC.createCameraVideoTrack(),
+      ]);
+    } catch (error) {
+      return rejectWithValue({
+        name,
+        message: error.message,
+      });
+    }
 
     localVideoTrack.play('local-player');
 
-    await agoraClient.publish([localAudioTrack, localVideoTrack]);
+    try {
+      await agoraClient.publish([localAudioTrack, localVideoTrack]);
+    } catch (error) {
+      return rejectWithValue({
+        name,
+        message: error.message,
+      });
+    }
 
     const uid = `${agoraUID}`;
     const user: User = {
@@ -89,7 +133,7 @@ export const join = createAsyncThunk(
       createdAt: Date.now().valueOf(),
     };
 
-    postLocal('users', user);
+    await postLocal('users', user);
     return user;
   },
 );
@@ -108,7 +152,7 @@ export const leave = createAsyncThunk(
     localVideoTrack.close();
     localVideoTrack = undefined;
 
-    deleteLocal(`users/${uid}`);
+    await deleteLocal(`users/${uid}`);
     await agoraClient.leave();
     return uid;
   },

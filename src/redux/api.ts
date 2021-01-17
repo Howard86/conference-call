@@ -1,10 +1,14 @@
-import type { User } from '@/server/user-service';
+import type { User } from '@/server/user';
 export interface GenericResponse {
   success: boolean;
 }
 
 export interface GetUserByUIDResponse extends GenericResponse {
   user: User;
+}
+
+export interface IssueTokenResponse extends GenericResponse {
+  token: string;
 }
 
 export const getLocal = async <R = GenericResponse>(

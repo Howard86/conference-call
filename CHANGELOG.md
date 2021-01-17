@@ -1,3 +1,19 @@
+# [0.4.0](https://github.com/Howard86/conference-call/compare/v0.3.0...v0.4.0) (2021-01-17)
+
+
+### Features
+
+* add admin page with AdminSession ([4879151](https://github.com/Howard86/conference-call/commit/4879151a6e38f13d437365d5b4b4998c73924ac6))
+* add agora service with updated issue api ([315aff1](https://github.com/Howard86/conference-call/commit/315aff195e1549296da08c9a623683cc0308afc3))
+* add auth with jwt ([a2c01c7](https://github.com/Howard86/conference-call/commit/a2c01c74b057488b4ccdc2d48687f87f847bca0f))
+* add issue token API ([ec61b06](https://github.com/Howard86/conference-call/commit/ec61b0660c3b1ceddee9118a6fc7a48b95e71823))
+* add updateAccessToken reducer ([0d346aa](https://github.com/Howard86/conference-call/commit/0d346aa5bcab25835c0a5010d2276c4acbee05a7))
+* handle error in redux thunk ([3c921f3](https://github.com/Howard86/conference-call/commit/3c921f3c09108b9db45736470cb4e462de505188))
+* set up nextauth ([0bc09e2](https://github.com/Howard86/conference-call/commit/0bc09e2ed16f69d8123b194c35a62d2ba77e2ead))
+* update config and add env check ([434345e](https://github.com/Howard86/conference-call/commit/434345e468b48b7dd675fead1c4e5d63da2e4c15))
+
+
+
 # [0.3.0](https://github.com/Howard86/conference-call/compare/v0.2.0...v0.3.0) (2021-01-11)
 
 

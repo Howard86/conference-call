@@ -17,10 +17,19 @@ import {
   postLocal,
 } from '../api';
 
-let AgoraRTC: IAgoraRTC;
-let agoraClient: IAgoraRTCClient;
-let localAudioTrack: ILocalAudioTrack = null;
-let localVideoTrack: ILocalVideoTrack = null;
+interface AgoraApp {
+  AgoraRTC: IAgoraRTC;
+  agoraClient: IAgoraRTCClient;
+  localAudioTrack: ILocalAudioTrack;
+  localVideoTrack: ILocalVideoTrack;
+}
+
+const app: AgoraApp = {
+  AgoraRTC: null,
+  agoraClient: null,
+  localAudioTrack: null,
+  localVideoTrack: null,
+};
 
 const CHANNEL_NAME = 'conference';
 
@@ -40,8 +49,8 @@ export const updateAccessToken = createAsyncThunk(
 export const activate = createAsyncThunk(
   'channel/activate',
   async (_, { dispatch }) => {
-    AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
-    agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    app.AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
+    app.agoraClient = app.AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
     // ! Fixed initialization issues with React dynamic import
     const {
@@ -51,9 +60,9 @@ export const activate = createAsyncThunk(
     } = await import('./slice');
 
     // ! EventHandlers will run twice, currently fixed by reducers
-    agoraClient.on('user-published', async (agoraUser, mediaType) => {
+    app.agoraClient.on('user-published', async (agoraUser, mediaType) => {
       try {
-        await agoraClient.subscribe(agoraUser, mediaType);
+        await app.agoraClient.subscribe(agoraUser, mediaType);
       } catch (error) {
         dispatch(updateErrorMessage(error.message));
       }
@@ -81,7 +90,7 @@ export const activate = createAsyncThunk(
       }
     });
 
-    agoraClient.on('user-unpublished', (agoraUser) => {
+    app.agoraClient.on('user-unpublished', (agoraUser) => {
       agoraUser.audioTrack?.removeAllListeners();
       agoraUser.videoTrack?.removeAllListeners();
       dispatch(removeOnlineUser(`${agoraUser.uid}`));
@@ -102,10 +111,10 @@ export const join = createAsyncThunk(
     }
 
     try {
-      [agoraUID, localAudioTrack, localVideoTrack] = await Promise.all([
-        agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
-        AgoraRTC.createMicrophoneAudioTrack(),
-        AgoraRTC.createCameraVideoTrack(),
+      [agoraUID, app.localAudioTrack, app.localVideoTrack] = await Promise.all([
+        app.agoraClient.join(config.agora.appId, CHANNEL_NAME, token),
+        app.AgoraRTC.createMicrophoneAudioTrack(),
+        app.AgoraRTC.createCameraVideoTrack(),
       ]);
     } catch (error) {
       return rejectWithValue({
@@ -114,10 +123,10 @@ export const join = createAsyncThunk(
       });
     }
 
-    localVideoTrack.play('local-player');
+    app.localVideoTrack.play('local-player');
 
     try {
-      await agoraClient.publish([localAudioTrack, localVideoTrack]);
+      await app.agoraClient.publish([app.localAudioTrack, app.localVideoTrack]);
     } catch (error) {
       return rejectWithValue({
         name,
@@ -138,39 +147,40 @@ export const join = createAsyncThunk(
   },
 );
 
-const clear = (track: ILocalAudioTrack | ILocalVideoTrack): void => {
+const clear = (track: ILocalAudioTrack | ILocalVideoTrack) => {
   track.stop();
   track.close();
-  track = null;
 };
-
 export const leave = createAsyncThunk(
   'channel/leave',
   async (_, { getState }) => {
     const root = getState() as RootState;
     const uid = `${root.user.uid}`;
 
-    clear(localAudioTrack);
-    clear(localVideoTrack);
+    clear(app.localAudioTrack);
+    app.localAudioTrack = null;
+    clear(app.localVideoTrack);
+    app.localVideoTrack = null;
 
     await deleteLocal(`users/${uid}`);
-    await agoraClient.leave();
+    await app.agoraClient.leave();
     return uid;
   },
 );
 
 export const updateVolume = async (isPublished: boolean): Promise<boolean> => {
-  if (!localAudioTrack || !agoraClient) {
+  if (!app.localAudioTrack || !app.agoraClient) {
     return false;
   }
 
   // TODO: somehow the browser still detects accessing microphone after unpublish
   if (isPublished) {
-    localAudioTrack.setVolume(0);
-    await agoraClient.unpublish(localAudioTrack);
+    app.localAudioTrack.setVolume(0);
+    await app.agoraClient.unpublish(app.localAudioTrack);
+    clear(app.localAudioTrack);
   } else {
-    localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    await agoraClient.publish(localAudioTrack);
+    app.localAudioTrack = await app.AgoraRTC.createMicrophoneAudioTrack();
+    await app.agoraClient.publish(app.localAudioTrack);
   }
 
   return true;
@@ -179,18 +189,17 @@ export const updateVolume = async (isPublished: boolean): Promise<boolean> => {
 export const updateVideoPublish = async (
   isPublished: boolean,
 ): Promise<boolean> => {
-  if (!localVideoTrack || !agoraClient) {
+  if (!app.localVideoTrack || !app.agoraClient) {
     return false;
   }
 
   if (isPublished) {
-    await agoraClient.unpublish(localVideoTrack);
-    localVideoTrack.stop();
-    localVideoTrack.close();
+    await app.agoraClient.unpublish(app.localVideoTrack);
+    clear(app.localVideoTrack);
   } else {
-    localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-    localVideoTrack.play('local-player');
-    await agoraClient.publish(localVideoTrack);
+    app.localVideoTrack = await app.AgoraRTC.createCameraVideoTrack();
+    app.localVideoTrack.play('local-player');
+    await app.agoraClient.publish(app.localVideoTrack);
   }
 
   return true;

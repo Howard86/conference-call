@@ -19,8 +19,8 @@ import {
 
 let AgoraRTC: IAgoraRTC;
 let agoraClient: IAgoraRTCClient;
-let localAudioTrack: ILocalAudioTrack;
-let localVideoTrack: ILocalVideoTrack;
+let localAudioTrack: ILocalAudioTrack = null;
+let localVideoTrack: ILocalVideoTrack = null;
 
 const CHANNEL_NAME = 'conference';
 
@@ -138,19 +138,20 @@ export const join = createAsyncThunk(
   },
 );
 
+const clear = (track: ILocalAudioTrack | ILocalVideoTrack): void => {
+  track.stop();
+  track.close();
+  track = null;
+};
+
 export const leave = createAsyncThunk(
   'channel/leave',
   async (_, { getState }) => {
     const root = getState() as RootState;
     const uid = `${root.user.uid}`;
 
-    localAudioTrack.stop();
-    localAudioTrack.close();
-    localAudioTrack = undefined;
-
-    localVideoTrack.stop();
-    localVideoTrack.close();
-    localVideoTrack = undefined;
+    clear(localAudioTrack);
+    clear(localVideoTrack);
 
     await deleteLocal(`users/${uid}`);
     await agoraClient.leave();

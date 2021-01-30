@@ -1,3 +1,20 @@
+# [0.5.0](https://github.com/Howard86/conference-call/compare/v0.4.0...v0.5.0) (2021-01-30)
+
+
+### Bug Fixes
+
+* close and leave audio/video ([8cbdbb8](https://github.com/Howard86/conference-call/commit/8cbdbb86a55895a3c3fb87b399b6ca0e05792855))
+* incorrect leave method ([283d475](https://github.com/Howard86/conference-call/commit/283d475b1ff6abd0f6569aa1e7c1b9228e8689fa))
+
+
+### Features
+
+* add room service & api ([98038f0](https://github.com/Howard86/conference-call/commit/98038f0b55da9818c592c14ada61bc273afd60ca))
+* **test:** add fetch mock ([9255550](https://github.com/Howard86/conference-call/commit/9255550d36bab7c6c569d244f8857a5fa22b78af))
+* **test:** add ProviderWrapper with AdminPage test ([66deb6e](https://github.com/Howard86/conference-call/commit/66deb6e0a630ac1b7d798dfc3c81e27387ae1bc9))
+
+
+
 # [0.4.0](https://github.com/Howard86/conference-call/compare/v0.3.0...v0.4.0) (2021-01-17)
 
 

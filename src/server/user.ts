@@ -7,7 +7,7 @@ export interface User {
 const userTable = new Map<string, User>();
 
 export const getAllUsers = (): User[] => {
-  return Array.from(userTable).map(([_, value]) => value);
+  return Array.from(userTable.values());
 };
 
 export const addUser = (user: User): User => {

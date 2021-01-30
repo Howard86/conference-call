@@ -1,18 +1,12 @@
 import React, { FC } from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
-import { Provider as ReduxProvider } from 'react-redux';
-import { Provider as NextAuthProvider } from 'next-auth/client';
 import type { AppProps } from 'next/app';
+import ProviderWrapper from '@/components/ProviderWrapper';
 import store from '@/redux/store';
 
 const App: FC<AppProps> = ({ Component, pageProps }) => (
-  <ReduxProvider store={store}>
-    <NextAuthProvider session={pageProps.session}>
-      <ChakraProvider>
-        <Component {...pageProps} />
-      </ChakraProvider>
-    </NextAuthProvider>
-  </ReduxProvider>
+  <ProviderWrapper store={store} session={pageProps.session}>
+    <Component {...pageProps} />
+  </ProviderWrapper>
 );
 
 export default App;
